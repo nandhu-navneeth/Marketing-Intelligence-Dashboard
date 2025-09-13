@@ -1,0 +1,8 @@
+streamlit
+pandas
+numpy
+plotly
+pydantic
+pytest
+python-dateutil
+statsmodels

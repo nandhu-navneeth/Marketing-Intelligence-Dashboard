@@ -79,8 +79,5 @@ Provide a simple `render.yaml` service pointing to `streamlit run app/Home.py`. 
 - Metrics functions: zero-division guards, expected outputs
 - Transform: join integrity and column presence
 
-## Screenshots
-- Add screenshots after deployment if desired.
-
 ## License
 MIT. See `LICENSE`.

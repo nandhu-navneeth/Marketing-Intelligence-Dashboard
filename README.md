@@ -54,8 +54,8 @@ marketing-intel-dashboard/
 3. Ensure `requirements.txt` is detected. Optional: include `data/` for demo, or rely on file upload.
 4. Copy the URL and share.
 
-Hosted link (to be added after deploy):
-- https://streamlit.app/your-org/marketing-intel-dashboard (placeholder)
+Hosted link:
+- https://marketing-intelligence-dashboard.streamlit.app
 
 ## Render (Alternative)
 Provide a simple `render.yaml` service pointing to `streamlit run app/Home.py`. Make sure to set a persistent disk if you want to keep uploaded files (optional).

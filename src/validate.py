@@ -57,13 +57,15 @@ def validate_frames(dfs: Dict[str, pd.DataFrame]) -> List[str]:
         df = dfs[key]
         missing = [c for c in AD_COLS if c not in df.columns]
         if missing:
-            raise ValueError(f"{key}: missing columns {missing}")
-        # Row-level checks via Pydantic for a small sample to avoid heavy cost
-        for _, row in df.head(1000).iterrows():
-            try:
-                AdRow(**{c: row.get(c) for c in AD_COLS})
-            except Exception as e:
-                raise ValueError(f"{key}: row validation failed: {e}")
+            warnings.append(f"{key}: missing columns {missing}; skipping strict row validation for this dataset.")
+        else:
+            # Row-level checks via Pydantic for a small sample to avoid heavy cost
+            for _, row in df.head(1000).iterrows():
+                try:
+                    AdRow(**{c: row.get(c) for c in AD_COLS})
+                except Exception as e:
+                    warnings.append(f"{key}: row validation issue: {e}")
+                    break
 
         # Quality flags
         bad_clicks = df[(df["impressions"] == 0) & (df["clicks"] > 0)]
@@ -79,21 +81,23 @@ def validate_frames(dfs: Dict[str, pd.DataFrame]) -> List[str]:
         b = dfs["business"]
         missing = [c for c in BUSINESS_COLS if c not in b.columns]
         if missing:
-            raise ValueError(f"business: missing columns {missing}")
-        for _, row in b.head(1000).iterrows():
-            try:
-                BusinessRow(**{c: row.get(c) for c in BUSINESS_COLS})
-            except Exception as e:
-                raise ValueError(f"business: row validation failed: {e}")
-        warnings.extend(_check_continuous_dates(b["date"]))
-        # Reconcile gross profit ~ total_revenue - cogs
-        tol = 1e-6
-        diff = (b["total_revenue"] - b["cogs"]) - b["gross_profit"]
-        mismatches = diff[diff.abs() > tol]
-        if not mismatches.empty:
-            warnings.append(
-                f"business: {len(mismatches)} rows where gross_profit != total_revenue - cogs (>|{tol}|)."
-            )
+            warnings.append(f"business: missing columns {missing}; skipping strict row validation.")
+        else:
+            for _, row in b.head(1000).iterrows():
+                try:
+                    BusinessRow(**{c: row.get(c) for c in BUSINESS_COLS})
+                except Exception as e:
+                    warnings.append(f"business: row validation issue: {e}")
+                    break
+            warnings.extend(_check_continuous_dates(b["date"]))
+            # Reconcile gross profit ~ total_revenue - cogs
+            if {"total_revenue", "cogs", "gross_profit"}.issubset(set(b.columns)):
+                tol = 1e-6
+                diff = (b["total_revenue"] - b["cogs"]) - b["gross_profit"]
+                mismatches = diff[diff.abs() > tol]
+                if not mismatches.empty:
+                    warnings.append(
+                        f"business: {len(mismatches)} rows where gross_profit != total_revenue - cogs (>|{tol}|)."
+                    )
 
     return warnings
-

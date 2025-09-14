@@ -40,7 +40,10 @@ if uploaded is not None:
 else:
     dfs = _load_default_data()
 
-warnings = validate_frames(dfs)
+try:
+    warnings = validate_frames(dfs)
+except Exception as e:
+    warnings = [f"Validation issue: {e}"]
 td = _transform(dfs)
 
 f = sidebar_filters(td.df_ads)

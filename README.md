@@ -48,17 +48,8 @@ marketing-intel-dashboard/
 4. Launch app: `streamlit run app/Home.py`
 5. Use provided sample CSVs in `data/` or upload a `.zip` containing the four CSVs.
 
-## Streamlit Cloud Deployment
-1. Push this repo to GitHub (public). License is MIT.
-2. Go to https://streamlit.io → Deploy app → connect the repo → set entry point to `app/Home.py`.
-3. Ensure `requirements.txt` is detected. Optional: include `data/` for demo, or rely on file upload.
-4. Copy the URL and share.
-
-Hosted link:
+## Hosted link:
 - https://marketing-intelligence-dashboard.streamlit.app
-
-## Render (Alternative)
-Provide a simple `render.yaml` service pointing to `streamlit run app/Home.py`. Make sure to set a persistent disk if you want to keep uploaded files (optional).
 
 ## Pages Overview
 - Home: KPIs, core time series, channel mix, insights, validation warnings

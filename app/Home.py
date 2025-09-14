@@ -15,6 +15,7 @@ from src.insights import generate_overview_insights
 from app.components.filters import sidebar_filters, apply_filters
 from app.components.kpi import kpi_card
 from src.metrics import blended_roas, aov, gross_margin_pct
+from src.formatting import fmt_currency_compact, fmt_int_compact, fmt_ratio
 from src.viz import line_dual_axis, stacked_bar
 
 
@@ -80,19 +81,19 @@ if not df_blended.empty and f.get("date_range"):
 # KPI row
 col1, col2, col3, col4, col5, col6 = st.columns(6)
 with col1:
-    kpi_card("Total Revenue", f"${df_blended['total_revenue'].sum():,.0f}", delta=delta_map.get("total_revenue"))
+    kpi_card("Total Revenue", fmt_currency_compact(float(df_blended['total_revenue'].sum() or 0.0)), delta=delta_map.get("total_revenue"))
 with col2:
-    kpi_card("Gross Profit", f"${df_blended['gross_profit'].sum():,.0f}", delta=delta_map.get("gross_profit"))
+    kpi_card("Gross Profit", fmt_currency_compact(float(df_blended['gross_profit'].sum() or 0.0)), delta=delta_map.get("gross_profit"))
 with col3:
-    kpi_card("Orders", f"{int(df_blended['orders'].sum() or 0):,}", delta=delta_map.get("orders"))
+    kpi_card("Orders", fmt_int_compact(float(df_blended['orders'].sum() or 0.0)), delta=delta_map.get("orders"))
 with col4:
-    kpi_card("New Customers", f"{int(df_blended['new_customers'].sum() or 0):,}", delta=delta_map.get("new_customers"))
+    kpi_card("New Customers", fmt_int_compact(float(df_blended['new_customers'].sum() or 0.0)), delta=delta_map.get("new_customers"))
 with col5:
     spend_total = float(df_blended['spend'].sum() or 0.0)
-    kpi_card("Spend", f"${spend_total:,.0f}", delta=delta_map.get("spend"))
+    kpi_card("Spend", fmt_currency_compact(spend_total), delta=delta_map.get("spend"))
 with col6:
     broas = blended_roas(float(df_blended['attributed_revenue'].sum() or 0.0), spend_total)
-    kpi_card("Blended ROAS", f"{broas:.2f}x", delta=delta_map.get("broas"))
+    kpi_card("Blended ROAS", fmt_ratio(broas), delta=delta_map.get("broas"))
 
 st.subheader("Time Series")
 if not df_blended.empty:

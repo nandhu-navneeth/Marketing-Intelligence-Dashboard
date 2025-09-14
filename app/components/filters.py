@@ -27,20 +27,39 @@ def init_filters(df_ads: pd.DataFrame):
         }
 
 
+def _date_bounds(df_ads: pd.DataFrame):
+    if df_ads.empty or "date" not in df_ads:
+        return None, None
+    dates = pd.to_datetime(df_ads["date"], errors="coerce").dropna()
+    if dates.empty:
+        return None, None
+    return dates.min(), dates.max()
+
+
 def sidebar_filters(df_ads: pd.DataFrame):
     init_filters(df_ads)
     f = st.session_state["filters"]
     st.sidebar.header("Filters")
 
     if not df_ads.empty:
-        dr = st.sidebar.date_input(
-            "Date Range",
-            value=(f["date_range"][0].date(), f["date_range"][1].date()),
-            min_value=df_ads["date"].min().date(),
-            max_value=df_ads["date"].max().date(),
-            key="date_range_picker",
-        )
-        f["date_range"] = (pd.to_datetime(dr[0]), pd.to_datetime(dr[1]))
+        dmin, dmax = _date_bounds(df_ads)
+        if dmin is not None and dmax is not None:
+            # Clamp previous selection into bounds
+            prev_start, prev_end = f.get("date_range", (dmin, dmax))
+            prev_start = pd.to_datetime(prev_start) if prev_start is not None else dmin
+            prev_end = pd.to_datetime(prev_end) if prev_end is not None else dmax
+            start = max(dmin, min(prev_start, dmax))
+            end = max(start, min(dmax, max(prev_end, dmin)))
+            dr = st.sidebar.date_input(
+                "Date Range",
+                value=(start.date(), end.date()),
+                min_value=dmin.date(),
+                max_value=dmax.date(),
+                key="date_range_picker",
+            )
+            f["date_range"] = (pd.to_datetime(dr[0]), pd.to_datetime(dr[1]))
+        else:
+            st.sidebar.info("No valid dates found in data.")
 
         f["blended"] = st.sidebar.toggle("Show blended view", value=f.get("blended", True), key="blended_toggle")
         f["include_quality_flags"] = st.sidebar.toggle("Include quality-flagged rows", value=f.get("include_quality_flags", True), key="quality_toggle")
